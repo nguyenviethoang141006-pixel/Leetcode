@@ -5,13 +5,11 @@ DROP TABlE IF EXISTS BillDetail;
 DROP TABlE IF EXISTS BillSource;
 DROP TABlE IF EXISTS HangHoa;
 DROP TABlE IF EXISTS NhanVien;
-
+--Drop table tránh bị lặp create từ lần chạy trc
 GO
-
 CREATE TABLE NhanVien (
     Idnv INT PRIMARY KEY,
     Name NVARCHAR(100),
-    DanhHieu NVARCHAR(100)
 );
 GO
 CREATE TABLE HangHoa (
@@ -52,12 +50,13 @@ CREATE TABLE BillDetail(
         REFERENCES HangHoa(ID)
 );
 GO
+--Tạo table
 
-INSERT INTO NhanVien (Idnv, Name,DanhHieu)
+INSERT INTO NhanVien (Idnv, Name)
 VALUES
-(1, 'Hoang', 'none'),
-(2, 'Alex', 'none'),
-(3, 'Mai', 'none');
+(1, 'Minh'),
+(2, 'Vũ'),
+(3, 'Mai');
 GO
 
 INSERT INTO HangHoa (ID, Name)
@@ -73,7 +72,7 @@ VALUES
 (2, 2,15,'2025-01-01',NULL),
 (3, 3,30,'2025-01-01','2025-01-04'),
 (4, 4,10,'2025-01-01',NULL),
-(5,3, 35,'2025-01-04', NULL);
+(5,3, 35,'2025-01-05', NULL);
 GO
 
 INSERT INTO BillSource (BillID, IdSeller, date)
@@ -99,12 +98,12 @@ VALUES
 (1004, 2, 2), 
 (1004, 3, 4),  
 (1005, 3, 6),   
-(1006,4,10),
+(1006, 4, 10),
 (1007, 1, 2), 
 (1008, 2, 5), 
 (1009, 1, 3);
 GO
-
+-- add các giá trị--
 SELECT [date],SUM(PriceHistory.ItemPrice*ItemCount) AS BillIncomeByDate
 FROM BillDetail
 JOIN HangHoa ON HangHoa.ID=BillDetail.ItemID
@@ -135,8 +134,9 @@ JOIN NhanVien ON NhanVien.Idnv=BillSource.IdSeller
 JOIN PriceHistory ON HangHoa.ID= PriceHistory.HangHoaID
 GROUP BY NhanVien.Name
 ORDER BY top1employee DESC
+--chạy qua thử
 
--- check xem khoảng ngày có bị đè lên nhau ko
+
 
 
 
