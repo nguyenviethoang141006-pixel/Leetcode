@@ -1,24 +1,25 @@
 USE PracticeDB;
 GO
-DROP TABlE IF EXISTS PriceHistory;
-DROP TABlE IF EXISTS BillDetail;
-DROP TABlE IF EXISTS BillSource;
-DROP TABlE IF EXISTS HangHoa;
-DROP TABlE IF EXISTS NhanVien;
+--DROP TABlE IF EXISTS PriceHistory;
+DROP TABlE IF EXISTS Bill_Detail;
+DROP TABlE IF EXISTS Bill_Source;
+DROP TABlE IF EXISTS Product;
+DROP TABlE IF EXISTS Employee;
 --Drop table tránh bị lặp create từ lần chạy trc
 GO
-CREATE TABLE NhanVien (
-    Idnv INT PRIMARY KEY,
+CREATE TABLE Employee (
+    ID INT IDENTITY(1,1) PRIMARY KEY,
     Name NVARCHAR(100),
 );
 GO
-CREATE TABLE HangHoa (
-    ID INT PRIMARY KEY,
+CREATE TABLE Product (
+    ID INT IDENTITY(1,1) PRIMARY KEY,
     Name NVARCHAR(100),
+    ItemPrice INT,
 );
 GO
-CREATE TABLE PriceHistory (
-    ID INT PRIMARY KEY,
+/*CREATE TABLE PriceHistory (
+    ID INT IDENTITY(1,1) PRIMARY KEY,
     HangHoaID INT,
     ValidFrom DATE NOT NULL,
     ValidTo DATE,
@@ -27,9 +28,9 @@ CREATE TABLE PriceHistory (
         FOREIGN KEY (HangHoaID)
         REFERENCES HangHoa(ID)
 );
-GO
-CREATE TABLE BillSource (
-    BillID INT PRIMARY KEY,
+GO*/
+CREATE TABLE Bill_Source (
+    BillID INT IDENTITY(1,1) PRIMARY KEY,
     IdSeller INT,
     date DATE,
     CONSTRAINT seller 
@@ -37,14 +38,16 @@ CREATE TABLE BillSource (
         REFERENCES NhanVien(Idnv)
 );
 GO
-CREATE TABLE BillDetail(
+CREATE TABLE Bill_Detail(
     BillID INT,
     ItemID INT,
     ItemCount INT,
+    Itemprice INT,
     PRIMARY KEY (BillID,ItemID),
+    
     CONSTRAINT bill
         FOREIGN KEY (BillID)
-        REFERENCES BillSource(BillID),
+        REFERENCES Bill_Source(BillID),
     CONSTRAINT item
         FOREIGN KEY (ItemID)
         REFERENCES HangHoa(ID)
@@ -52,89 +55,75 @@ CREATE TABLE BillDetail(
 GO
 --Tạo table
 
-INSERT INTO NhanVien (Idnv, Name)
+INSERT INTO Employee ( Name)
 VALUES
-(1, 'Minh'),
-(2, 'Vũ'),
-(3, 'Mai');
+('Minh'),
+('Vũ'),
+('Mai');
 GO
 
-INSERT INTO HangHoa (ID, Name)
+INSERT INTO Product ( Name,Itemprice)
 VALUES
-(1, 'cake'),
-(2, 'ice-cream'),
-(3, 'Ca-cao'),
-(4, 'candy');
+('cake',70),
+('ice-cream',15),
+('Ca-cao',10),
+('candy',5);
 GO
-INSERT INTO PriceHistory (ID, HangHoaID,ItemPrice,ValidFrom,ValidTo)
+/*INSERT INTO PriceHistory (ID, HangHoaID,ItemPrice,ValidFrom,ValidTo)
 VALUES
 (1, 1,150,'2025-01-01',NULL),
 (2, 2,15,'2025-01-01',NULL),
 (3, 3,30,'2025-01-01','2025-01-04'),
 (4, 4,10,'2025-01-01',NULL),
 (5,3, 35,'2025-01-05', NULL);
+GO*/
+
+INSERT INTO Bill_Source ( IdSeller, date)
+VALUES
+( 1, '2025-01-01'),
+( 1, '2025-01-02'),
+( 2, '2025-01-03'),
+( 3, '2025-01-04'),
+( 2, '2025-01-05'),
+( 2, '2025-01-05'),
+( 2, '2025-01-05'),
+( 2, '2025-01-05'),
+( 2, '2025-01-06');
+GO
+INSERT INTO Product (Name, Itemprice)
+VALUES
+('cake', 70),
+('ice-cream', 15),
+('Ca-cao', 10),
+('candy', 5);
 GO
 
-INSERT INTO BillSource (BillID, IdSeller, date)
+INSERT INTO Bill_Detail (BillID, ItemID, ItemCount, Itemprice)
 VALUES
-(1001, 1, '2025-01-01'),
-(1002, 1, '2025-01-02'),
-(1003, 2, '2025-01-03'),
-(1004, 3, '2025-01-04'),
-(1005, 2, '2025-01-05'),
-(1006, 2, '2025-01-05'),
-(1007, 2, '2025-01-05'),
-(1008, 2, '2025-01-05'),
-(1009, 2, '2025-01-06');
-GO
-INSERT INTO BillDetail (BillID, ItemID, ItemCount)
-VALUES
-(1001, 1, 2),  
-(1001, 2, 5),  
-(1002, 1, 3),  
-(1002, 3, 2),   
-(1003, 2, 10), 
-(1004, 1, 1), 
-(1004, 2, 2), 
-(1004, 3, 4),  
-(1005, 3, 6),   
-(1006, 4, 10),
-(1007, 1, 2), 
-(1008, 2, 5), 
-(1009, 1, 3);
+(1, 1, 2, 70),  
+(1, 2, 5, 15),  
+(2, 1, 3, 70),  
+(2, 3, 2, 10),   
+(3, 2, 10, 15), 
+(4, 1, 1, 70), 
+(4, 2, 2, 15), 
+(4, 3, 4, 10),  
+(5, 3, 6, 10),   
+(6, 4, 10, 5),
+(7, 1, 2, 70), 
+(8, 2, 5, 15), 
+(9, 1, 3, 70);
 GO
 -- add các giá trị--
-SELECT [date],SUM(PriceHistory.ItemPrice*ItemCount) AS BillIncomeByDate
-FROM BillDetail
-JOIN HangHoa ON HangHoa.ID=BillDetail.ItemID
-JOIN BillSource ON BillSource.BillID=BillDetail.BillID
-JOIN PriceHistory ON HangHoa.ID= PriceHistory.HangHoaID
-GROUP BY [date]
-
-SELECT ItemID,SUM(ItemCount) AS SellCount,SUM(ItemPrice*ItemCount) AS BillIncomeByItem
-FROM BillDetail
-JOIN HangHoa ON HangHoa.ID=BillDetail.ItemID
-JOIN BillSource ON BillSource.BillID=BillDetail.BillID
-JOIN PriceHistory ON HangHoa.ID= PriceHistory.HangHoaID
-GROUP BY ItemID
-
-SELECT IdSeller,SUM(ItemPrice*ItemCount) AS BillIncomeByPerson
-FROM BillDetail
-JOIN HangHoa ON HangHoa.ID=BillDetail.ItemID
-JOIN BillSource ON BillSource.BillID=BillDetail.BillID
-JOIN PriceHistory ON HangHoa.ID= PriceHistory.HangHoaID
-GROUP BY IdSeller
-
-SELECT TOP 1
-    NhanVien.Name,SUM(ItemPrice*ItemCount) AS top1employee
-FROM BillDetail
-JOIN HangHoa ON HangHoa.ID=BillDetail.ItemID
-JOIN BillSource ON BillSource.BillID=BillDetail.BillID
-JOIN NhanVien ON NhanVien.Idnv=BillSource.IdSeller
-JOIN PriceHistory ON HangHoa.ID= PriceHistory.HangHoaID
-GROUP BY NhanVien.Name
-ORDER BY top1employee DESC
---chạy qua thử
+--SELECT * FROM PriceHistory;
+SELECT * FROM Employee;
+SELECT * FROM Product;
+SELECT * FROM Bill_Source;
+SELECT * FROM Bill_Detail;
+-- chạy qua thử
+-- note feedback: thêm item price BillDetails (reference: sql northwind database)
+-- sửa lại đặt tên thuần vn hoặc eng
+-- 
 
 
 
