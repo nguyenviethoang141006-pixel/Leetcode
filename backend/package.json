@@ -1,0 +1,9 @@
+{
+    "name": "mixue-management-backend",
+    "description": "idk",
+    "author": "lamthnv",
+    "version": "1.0.0",
+    "main": "server.js",
+    "type": "module",
+    "dependencies": {}
+}
