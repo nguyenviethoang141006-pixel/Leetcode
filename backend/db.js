@@ -1,5 +1,5 @@
-import sql from "mssql";
-import "dotenv/config";
+import sql from "mssql"; // gọi thư viện để dùng microsoft sql
+import "dotenv/config"; // dùng để chuyển .env data sang process.env
 
 const dbConfig = {
   user: process.env.DB_USER,
